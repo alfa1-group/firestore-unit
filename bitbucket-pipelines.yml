@@ -27,7 +27,7 @@ pipelines:
             - pipe: atlassian/git-secrets-scan:0.5.1
     - step:
         name: Deploy to repository
-        deployment: prod
+        deployment: Production
         trigger: manual 
         script:
           - mvn -B deploy --file pom.xml        
