@@ -115,6 +115,7 @@ class FirestoreTester {
             assertPrimitiveValue(value, docValue, Boolean.class, JsonNode::asBoolean, fieldPath);
         } else if (value.isBinary()) { // Bytes
             fail("Not supported yet at " + fieldPath);
+            // TODO:
         } else if (value.isFloatingPointNumber()) { // Floating point number
             assertPrimitiveValue(value, docValue, Double.class, JsonNode::asDouble, fieldPath);
         } else if (value.isIntegralNumber()) { // Integer

@@ -1,0 +1,7 @@
+{
+  "_testcollection" : {
+    "testdoc1": {
+      "testBoolean": 1.0
+    }
+  }
+}

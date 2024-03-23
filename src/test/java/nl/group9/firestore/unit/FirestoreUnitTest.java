@@ -189,6 +189,16 @@ public class FirestoreUnitTest {
         testInvalidFile("json/missing_doc.json", "The document was not found at testcollection/testdoc1/subcollection/testdoc3 ==> expected: <true> but was: <false>");
     }
 
+    @Test
+    void testInvalidValueType() {
+        testInvalidFile("json/null_value.json", "Invalid JSON Node type encountered for document path testcollection/testdoc1/testBoolean");
+    }
+
+    @Test
+    void testTypeMismatch() {
+        testInvalidFile("json/invalid_type.json", "Field is not of extected type class java.lang.Double at testcollection/testdoc1/testBoolean ==> Unexpected type, expected: <java.lang.Double> but was: <java.lang.Boolean>");
+    }
+
     private void testInvalidFile(String file, String errorMessage) {
         try (Firestore firestore = connection()) {
             try {
