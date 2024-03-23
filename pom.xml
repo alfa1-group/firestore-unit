@@ -138,7 +138,6 @@
               </execution>
             </executions>
             <configuration>
-              <bestPractices>true</bestPractices>
               <signer>bc</signer>
             </configuration>
           </plugin>
