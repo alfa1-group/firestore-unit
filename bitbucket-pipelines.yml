@@ -30,4 +30,5 @@ pipelines:
         deployment: Production
         trigger: manual 
         script:
+          - bash configure-maven.sh
           - mvn -B deploy --file pom.xml        
