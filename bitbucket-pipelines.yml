@@ -28,7 +28,9 @@ pipelines:
     - step:
         name: Deploy to repository
         deployment: Production
-        trigger: manual 
+        trigger: manual
+        caches:
+          - maven
         script:
           - bash configure-maven.sh
           - mvn -B deploy --file pom.xml        
