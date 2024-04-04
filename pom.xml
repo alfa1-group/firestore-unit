@@ -29,9 +29,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://bitbucket.org:group9nl/firestore-unit.git</connection>
-    <developerConnection>scm:git:ssh://bitbucket.org:group9nl/firestore-unit.git</developerConnection>
-    <url>https://bitbucket.org/group9nl/firestore-unit/src/main/</url>
+    <connection>scm:git:https://github.com/alfa1-group/firestore-unit.git</connection>
+    <developerConnection>scm:git:https://github.com/alfa1-group/firestore-unit.git</developerConnection>
+    <url>https://github.com/alfa1-group/firestore-unit/</url>
   </scm>
 
   <properties>
