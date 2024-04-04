@@ -137,11 +137,6 @@
                 </goals>
               </execution>
             </executions>
-            <configuration>
-              <signer>bc</signer>
-              <keyEnvName>MAVEN_GPG_KEY</keyEnvName>
-              <passphraseEnvName>MAVEN_GPG_PASSPHRASE</passphraseEnvName>
-            </configuration>
           </plugin>
         </plugins>
       </build>
