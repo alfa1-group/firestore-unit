@@ -1,0 +1,11 @@
+{
+  "_testcollection" : {
+    "_testdoc3": {
+      "_subcollection" : {
+        "testdoc4": {
+          "testText": "Hello Firestore"
+        }
+      }
+    }
+  }
+}
