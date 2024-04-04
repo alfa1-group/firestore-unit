@@ -21,7 +21,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class FirestoreUnit {
 
     /**
-     * TODO: Create javadoc
+     * Private default constructor
+     */
+    private FirestoreUnit() {}
+
+    /**
+     * Validate the contents of the Firestore database is equal to the contents of the JSON provided.
      * @param firestore The firestore instance to read from
      * @param json The JSON reference data as string
      */
