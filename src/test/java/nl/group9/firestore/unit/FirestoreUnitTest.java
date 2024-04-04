@@ -66,6 +66,14 @@ public class FirestoreUnitTest {
             Map<String, Object> testdoc2Fields = new HashMap<>();
             testdoc2Fields.put("testText", "Hello Firestore");
             testdoc2.set(testdoc2Fields).get();
+
+            // Document with a missing intermediate Document node as parent
+            DocumentReference testdoc3 = testcollection.document("testdoc3");
+            CollectionReference subsubcollection = testdoc3.collection("subcollection");
+            DocumentReference testdoc4 = subsubcollection.document("testdoc4");
+            Map<String, Object> testdoc4Fields = new HashMap<>();
+            testdoc4Fields.put("testText", "Hello Firestore");
+            testdoc4.set(testdoc4Fields).get();
         }
     }
 
@@ -136,6 +144,13 @@ public class FirestoreUnitTest {
     void testYamlInputStream() throws Exception {
         try (Firestore firestore = connection()) {
             assertFirestoreYaml(firestore, asInputStream(CORRECT_YAML));
+        }
+    }
+
+    @Test
+    void emptySubDocument() throws Exception {
+        try (Firestore firestore = connection()) {
+            assertFirestoreJson(firestore, asInputStream("json/missing_subdoc.json"));
         }
     }
 

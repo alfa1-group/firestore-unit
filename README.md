@@ -36,9 +36,10 @@ You can choose to either define the validation files as JSON or as YAML. Both fo
 offer equal features.
 
 **Example in JSON:**
+
 ```json
 {
-  "_testcollection" : {
+  "_testcollection": {
     "testdoc1": {
       "testArray": [
         false,
@@ -56,8 +57,15 @@ offer equal features.
       "testDateTime": "2024-03-22T12:13:14.123Z",
       "testReference": "testcollection/ref1",
       "testText": "Hello world",
-      "_subcollection" : {
+      "_subcollection": {
         "testdoc2": {
+          "testText": "Hello Firestore"
+        }
+      }
+    },
+    "_testdoc3": {
+      "_subcollection": {
+        "testdoc4": {
           "testText": "Hello Firestore"
         }
       }
@@ -86,12 +94,19 @@ _testcollection:
     _subcollection:
       testdoc2:
         testText: "Hello Firestore"
+  _testdoc3:
+    _subcollection:
+      testdoc3:
+        testText: "Hello Firestore"
 ```
 
 Note that in this example:
 * Collections always need to be prefixed with an underscore "_". This is to let the library
   differentiate between the Map datatype and collections.
 * Date/time values need to be defined in ISO 8601 format
+* In case a document should be skipped for checking (both for existance and the fields), prefix it with an underscore
+  "_". In this case the document "testcollection/testdoc3" is optional. Firestore allows you to skip definition of all
+  intermediate documents in a path.
 
 ### Use the library in your test ###
 
@@ -128,3 +143,7 @@ These will be reviewed and if appropriate merged into the main release.
 ### Who do I talk to? ###
 
 For contact, see the developers section in the `pom.xml` file.
+
+### Releasing a new version ###
+
+Run: `mvn clean deploy -P release`

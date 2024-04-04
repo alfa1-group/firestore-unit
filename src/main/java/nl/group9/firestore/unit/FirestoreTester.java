@@ -59,14 +59,24 @@ class FirestoreTester {
         for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
             Map.Entry<String, JsonNode> fieldEntry = it.next();
 
-            DocumentReference doc = collectionReference.document(fieldEntry.getKey());
-            futures.add(validateDocument(doc, fieldEntry.getValue()));
+            String documentName = fieldEntry.getKey();
+            boolean skipCurrent = false;
+            if (documentName.startsWith("_")) {
+                documentName = documentName.substring(1);
+                skipCurrent = true;
+            }
+
+            DocumentReference doc = collectionReference.document(documentName);
+            futures.add(validateDocument(doc, fieldEntry.getValue(), skipCurrent));
         }
         return ApiFutures.allAsList(futures);
     }
 
-    private ApiFuture<?> validateDocument(DocumentReference docRef, JsonNode node) {
+    private ApiFuture<?> validateDocument(DocumentReference docRef, JsonNode node, boolean skipCurrent) {
         ApiFuture<?> childFuture = traverseCollections(docRef::collection, node);
+        if (skipCurrent) {
+            return childFuture;
+        }
 
         ApiFuture<DocumentSnapshot> docFuture = docRef.get();
         ApiFuture<DocumentSnapshot> result = ApiFutures.transform(

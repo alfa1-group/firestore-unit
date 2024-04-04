@@ -7,30 +7,40 @@
 
 image: maven:3.6.3
 
+build-test: &build-test
+  step:
+    name: Build and Test
+    caches:
+      - maven
+    script:
+      - mvn -B verify --file pom.xml
+    after-script:
+      # Collect checkstyle results, if any, and convert to Bitbucket Code Insights.
+      - pipe: atlassian/checkstyle-report:0.3.0
+security-scan: &security-scan
+  step:
+    name: Security Scan
+    script:
+      # Run a security scan for sensitive data.
+      # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+      - pipe: atlassian/git-secrets-scan:0.5.1
+
 pipelines:
-  default:
-    - parallel:
+  branches:
+    main:
+      - parallel:
+          - <<: *build-test
+          - <<: *security-scan
       - step:
-          name: Build and Test
+          name: Deploy to repository
+          deployment: Production
+          trigger: manual
           caches:
             - maven
           script:
-            - mvn -B verify --file pom.xml
-          after-script:
-              # Collect checkstyle results, if any, and convert to Bitbucket Code Insights.
-            - pipe: atlassian/checkstyle-report:0.3.0
-      - step:
-          name: Security Scan
-          script:
-            # Run a security scan for sensitive data.
-            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
-            - pipe: atlassian/git-secrets-scan:0.5.1
-    - step:
-        name: Deploy to repository
-        deployment: Production
-        trigger: manual
-        caches:
-          - maven
-        script:
-          - bash configure-maven.sh
-          - mvn -B deploy --file pom.xml        
+            - bash configure-maven.sh
+            - mvn -B deploy --file pom.xml
+  default:
+    - parallel:
+      - <<: *build-test
+      - <<: *security-scan
