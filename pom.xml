@@ -9,7 +9,7 @@
 
   <name>firestore-unit</name>
   <description>Unit testing library to validate the contents of a Firestore instance in the spirit of DBUnit</description>
-  <url>https://bitbucket.org/group9nl/firestore-unit/src/main/</url>
+  <url>https://github.com/alfa1-group/firestore-unit</url>
 
   <licenses>
     <license>
