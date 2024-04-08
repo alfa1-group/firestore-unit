@@ -127,8 +127,11 @@
               </execution>
             </executions>
             <configuration>
-              <keyEnvName>MAVEN_GPG_KEY</keyEnvName>
-              <passphraseEnvName>MAVEN_GPG_PASSPHRASE</passphraseEnvName>
+              <!-- Prevent `gpg` from using pinentry programs -->
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
             </configuration>
           </plugin>
         </plugins>

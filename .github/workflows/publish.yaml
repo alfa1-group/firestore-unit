@@ -17,7 +17,10 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Publish to the Maven Central Repository
-        run: mvn --batch-mode -P release -P release-to-central deploy
+        run: |
+          echo ${MAVEN_GPG_KEY} > private_key.txt
+          gpg --import --batch private_key.txt
+          mvn --batch-mode -P release -P release-to-central deploy
         env:
           MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_KEY }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
