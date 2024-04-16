@@ -23,11 +23,14 @@ jobs:
         run: |
           echo ${MAVEN_GPG_KEY} > private_key.txt
           head -n 1 private_key.txt
+          echo ${TEST_ME}
+          wc -l private_key.txt
           gpg --import --batch private_key.txt
           mvn --batch-mode -P release -P release-to-central deploy
         env:
           MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_KEY }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          TEST_ME: $${{ vars.MAVEN_GPG_TEST }}
       - name: Publish to GitHub Packages
         run: mvn --batch-mode -P release -P release-to-github deploy
         env:
