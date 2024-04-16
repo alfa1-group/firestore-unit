@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -26,12 +27,24 @@ public class FirestoreUnit {
     private FirestoreUnit() {}
 
     /**
-     * Validate the contents of the Firestore database is equal to the contents of the JSON provided.
+     * Validate the contents of the Firestore database is equal to the contents of the JSON provided. The default
+     * options are used.
+     * @see #assertFirestoreJson(Firestore, Options, String)
      * @param firestore The firestore instance to read from
      * @param json The JSON reference data as string
      */
     public static void assertFirestoreJson(Firestore firestore, String json) {
-        assertFirestore(firestore, new ObjectMapper(), json);
+        assertFirestoreJson(firestore, options(), json);
+    }
+
+    /**
+     * Validate the contents of the Firestore database is equal to the contents of the JSON provided.
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param json The JSON reference data as String
+     */
+    public static void assertFirestoreJson(Firestore firestore, Options options, String json) {
+        assertFirestore(firestore, new ObjectMapper(), options, json);
     }
 
     /**
@@ -41,7 +54,18 @@ public class FirestoreUnit {
      * @param json The JSON reference data as file
      */
     public static void assertFirestoreJson(Firestore firestore, File json) {
-        assertFirestore(firestore, new ObjectMapper(), json);
+        assertFirestoreJson(firestore, options(), json);
+    }
+
+    /**
+     * Validate using a JSON File
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param json The JSON reference data as File
+     */
+    public static void assertFirestoreJson(Firestore firestore, Options options, File json) {
+        assertFirestore(firestore, new ObjectMapper(), options, json);
     }
 
     /**
@@ -51,7 +75,18 @@ public class FirestoreUnit {
      * @param json The JSON reference data as URL
      */
     public static void assertFirestoreJson(Firestore firestore, URL json) {
-        assertFirestore(firestore, new ObjectMapper(), json);
+        assertFirestoreJson(firestore, options(), json);
+    }
+
+    /**
+     * Validate using a JSON URL
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param json The JSON reference data as URL
+     */
+    public static void assertFirestoreJson(Firestore firestore, Options options, URL json) {
+        assertFirestore(firestore, new ObjectMapper(), options, json);
     }
 
     /**
@@ -61,7 +96,18 @@ public class FirestoreUnit {
      * @param json The JSON reference data as Reader
      */
     public static void assertFirestoreJson(Firestore firestore, Reader json) {
-        assertFirestore(firestore, new ObjectMapper(), json);
+        assertFirestoreJson(firestore, options(), json);
+    }
+
+    /**
+     * Validate using a JSON Reader
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param json The JSON reference data as Reader
+     */
+    public static void assertFirestoreJson(Firestore firestore, Options options, Reader json) {
+        assertFirestore(firestore, new ObjectMapper(), options, json);
     }
 
     /**
@@ -71,7 +117,18 @@ public class FirestoreUnit {
      * @param json The JSON reference data as InputStream
      */
     public static void assertFirestoreJson(Firestore firestore, InputStream json) {
-        assertFirestore(firestore, new ObjectMapper(), json);
+        assertFirestoreJson(firestore, options(), json);
+    }
+
+    /**
+     * Validate using a JSON InputStream
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param json The JSON reference data as InputStream
+     */
+    public static void assertFirestoreJson(Firestore firestore, Options options, InputStream json) {
+        assertFirestore(firestore, new ObjectMapper(), options, json);
     }
 
     /**
@@ -81,7 +138,18 @@ public class FirestoreUnit {
      * @param yaml The YAML reference data as String
      */
     public static void assertFirestoreYaml(Firestore firestore, String yaml) {
-        assertFirestore(firestore, new YAMLMapper(), yaml);
+        assertFirestoreYaml(firestore, options(), yaml);
+    }
+
+    /**
+     * Validate using a YAML String
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param yaml The YAML reference data as String
+     */
+    public static void assertFirestoreYaml(Firestore firestore, Options options, String yaml) {
+        assertFirestore(firestore, new YAMLMapper(), options, yaml);
     }
 
     /**
@@ -91,7 +159,18 @@ public class FirestoreUnit {
      * @param yaml The YAML reference data as file
      */
     public static void assertFirestoreYaml(Firestore firestore, File yaml) {
-        assertFirestore(firestore, new YAMLMapper(), yaml);
+        assertFirestoreYaml(firestore, options(), yaml);
+    }
+
+    /**
+     * Validate using a YAML URL
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param yaml The YAML reference data as File
+     */
+    public static void assertFirestoreYaml(Firestore firestore, Options options, File yaml) {
+        assertFirestore(firestore, new YAMLMapper(), options, yaml);
     }
 
     /**
@@ -101,7 +180,18 @@ public class FirestoreUnit {
      * @param yaml The YAML reference data as URL
      */
     public static void assertFirestoreYaml(Firestore firestore, URL yaml) {
-        assertFirestore(firestore, new YAMLMapper(), yaml);
+        assertFirestoreYaml(firestore, options(), yaml);
+    }
+
+    /**
+     * Validate using a YAML Reader
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param yaml The YAML reference data as URL
+     */
+    public static void assertFirestoreYaml(Firestore firestore, Options options, URL yaml) {
+        assertFirestore(firestore, new YAMLMapper(), options, yaml);
     }
 
     /**
@@ -111,7 +201,18 @@ public class FirestoreUnit {
      * @param yaml The YAML reference data as Reader
      */
     public static void assertFirestoreYaml(Firestore firestore, Reader yaml) {
-        assertFirestore(firestore, new YAMLMapper(), yaml);
+        assertFirestoreYaml(firestore, options(), yaml);
+    }
+
+    /**
+     * Validate using a YAML Reader
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param yaml The YAML reference data as Reader
+     */
+    public static void assertFirestoreYaml(Firestore firestore, Options options, Reader yaml) {
+        assertFirestore(firestore, new YAMLMapper(), options, yaml);
     }
 
     /**
@@ -121,51 +222,114 @@ public class FirestoreUnit {
      * @param yaml The YAML reference data as InputStream
      */
     public static void assertFirestoreYaml(Firestore firestore, InputStream yaml) {
-        assertFirestore(firestore, new YAMLMapper(), yaml);
+        assertFirestoreYaml(firestore, options(), yaml);
     }
 
-    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, String contents) {
+    /**
+     * Validate using a YAML InputStream
+     * @see #assertFirestoreJson(Firestore, Options, String)
+     * @param firestore The firestore instance to read from
+     * @param options The options for validation
+     * @param yaml The YAML reference data as InputStream
+     */
+    public static void assertFirestoreYaml(Firestore firestore, Options options, InputStream yaml) {
+        assertFirestore(firestore, new YAMLMapper(), options, yaml);
+    }
+
+    /**
+     * Return the default options
+     * @return the options
+     */
+    public static Options options() {
+        return new Options();
+    }
+
+    /**
+     * Options to configure the behaviour of the testing setup.
+     */
+    public static class Options {
+        private final ZoneId zoneId;
+
+        /**
+         * Default constructor, sets default values for options
+         */
+        private Options() {
+            zoneId = ZoneId.of("UTC");
+        }
+
+        /**
+         * Updating constructor. Used in the with*() methods.
+         * @param zoneId The zone id.
+         */
+        private Options(ZoneId zoneId) {
+            this.zoneId = zoneId;
+        }
+
+        /**
+         * Configure the zoneId to use when comparing timestamps
+         * @param zoneId The name of the zone Id
+         * @return The new options
+         */
+        public Options withZoneId(String zoneId) {
+            return withZoneId(ZoneId.of(zoneId));
+        }
+
+        /**
+         * Configure the zoneId to use when comparing timestamps
+         * @param zoneId The zone Id
+         * @return The new options
+         */
+        public Options withZoneId(ZoneId zoneId) {
+            return new Options(zoneId);
+        }
+
+        ZoneId getZoneId() {
+            return zoneId;
+        }
+    }
+
+    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, Options options, String contents) {
         try {
-            FirestoreUnit.assertFirestore(firestore, mapper.readTree(contents));
+            FirestoreUnit.assertFirestore(firestore, options, mapper.readTree(contents));
         } catch (JsonProcessingException e) {
             fail(e);
         }
     }
 
-    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, File contents) {
+    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, Options options, File contents) {
         try {
-            FirestoreUnit.assertFirestore(firestore, mapper.readTree(contents));
+            FirestoreUnit.assertFirestore(firestore, options, mapper.readTree(contents));
         } catch (IOException e) {
             fail(e);
         }
     }
 
-    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, URL contents) {
+    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, Options options, URL contents) {
         try {
-            FirestoreUnit.assertFirestore(firestore, mapper.readTree(contents));
+            FirestoreUnit.assertFirestore(firestore, options, mapper.readTree(contents));
         } catch (IOException e) {
             fail(e);
         }
     }
 
-    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, Reader contents) {
+    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, Options options, Reader contents) {
         try {
-            FirestoreUnit.assertFirestore(firestore, mapper.readTree(contents));
+            FirestoreUnit.assertFirestore(firestore, options, mapper.readTree(contents));
         } catch (IOException e) {
             fail(e);
         }
     }
 
-    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, InputStream contents) {
+    private static void assertFirestore(Firestore firestore, ObjectMapper mapper, Options options, InputStream contents) {
         try {
-            FirestoreUnit.assertFirestore(firestore, mapper.readTree(contents));
+            FirestoreUnit.assertFirestore(firestore, options, mapper.readTree(contents));
         } catch (IOException e) {
             fail(e);
         }
     }
 
-    private static void assertFirestore(Firestore firestore, JsonNode tree) {
-        FirestoreTester tester = new FirestoreTester(firestore, tree);
+    private static void assertFirestore(Firestore firestore, Options options, JsonNode tree) {
+        FirestoreTester tester = new FirestoreTester(firestore, options, tree);
         tester.validate();
     }
 

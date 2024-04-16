@@ -13,8 +13,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.opentest4j.AssertionFailedError;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -32,9 +33,11 @@ class FirestoreTester {
     private final JsonNode tree;
     private final Executor executor;
     private final DateTimeFormatter formatter;
+    private final FirestoreUnit.Options options;
 
-    public FirestoreTester(Firestore firestore, JsonNode tree) {
+    public FirestoreTester(Firestore firestore, FirestoreUnit.Options options, JsonNode tree) {
         this.firestore = firestore;
+        this.options = options;
         this.tree = tree;
         this.executor = MoreExecutors.directExecutor();
         this.formatter = DateTimeFormatter.ISO_DATE_TIME;
@@ -135,7 +138,11 @@ class FirestoreTester {
         } else if (value.isTextual()) {
             if (docValue instanceof Timestamp) {
                 // Date and time
-                assertPrimitiveValue(value, docValue, Timestamp.class, this::jsonDateTimeToTimestamp, fieldPath);
+                assertPrimitiveValue(value,
+                        timestampZoZonedDateTime((Timestamp) docValue),
+                        ZonedDateTime.class,
+                        this::jsonDateTimeToZonedDateTime,
+                        fieldPath);
             } else if (docValue instanceof DocumentReference) {
                 assertDocumentReference(value, docValue, fieldPath);
             } else {
@@ -186,12 +193,23 @@ class FirestoreTester {
         validateFields(value, fieldPath, mapDocValue::containsKey, mapDocValue::get);
     }
 
-    private Timestamp jsonDateTimeToTimestamp(JsonNode value) {
-        Date date = Date.from(LocalDateTime
-                .parse(value.asText(), this.formatter)
-                .atZone(ZoneId.systemDefault())
-                .toInstant());
-        return Timestamp.of(date);
+    private ZonedDateTime jsonDateTimeToZonedDateTime(JsonNode value) {
+        TemporalAccessor parseResult = formatter.parseBest(value.asText(), ZonedDateTime::from, LocalDateTime::from);
+        ZonedDateTime dateTime;
+
+        if (parseResult instanceof LocalDateTime) {
+            dateTime = ((LocalDateTime) parseResult).atZone(options.getZoneId());
+        } else {
+            dateTime = (ZonedDateTime) parseResult;
+            dateTime = dateTime.toInstant().atZone(options.getZoneId());
+        }
+
+       return dateTime;
+    }
+
+    private ZonedDateTime timestampZoZonedDateTime(Timestamp timestamp) {
+        Date date = timestamp.toDate();
+        return date.toInstant().atZone(options.getZoneId());
     }
 
     private void assertType(Object docValue, Class<?> type, String fieldPath) {

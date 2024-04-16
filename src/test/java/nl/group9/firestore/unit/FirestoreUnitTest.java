@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.time.*;
 import java.util.*;
 
 import static nl.group9.firestore.unit.FirestoreUnit.assertFirestoreJson;
@@ -29,6 +30,9 @@ public class FirestoreUnitTest {
 
     private static final String CORRECT_JSON = "json/correct.json";
     private static final String CORRECT_YAML = "yaml/correct.yaml";
+
+    private static final ZoneId TIMEZONE = ZoneId.of("UTC+2");
+
 
     @Container
     public static FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(
@@ -50,11 +54,7 @@ public class FirestoreUnitTest {
                     "field1", 10,
                     "field2", "text"
             ));
-            // "2024-03-22T12:13:14.123Z"
-            Calendar testDateTime = Calendar.getInstance();
-            testDateTime.set(2024, Calendar.MARCH, 22, 12, 13, 14);
-            testDateTime.set(Calendar.MILLISECOND, 123);
-            testdoc1Fields.put("testDateTime", Timestamp.of(testDateTime.getTime()));
+            testdoc1Fields.put("testDateTime", timestampValue(ZoneId.of("UTC")));
 
             testdoc1Fields.put("testReference", testcollection.document("ref1"));
             testdoc1Fields.put("testText", "Hello world");
@@ -74,7 +74,21 @@ public class FirestoreUnitTest {
             Map<String, Object> testdoc4Fields = new HashMap<>();
             testdoc4Fields.put("testText", "Hello Firestore");
             testdoc4.set(testdoc4Fields).get();
+
+            // Timezone date validations
+            DocumentReference timezonedoc = testcollection.document("timezoned");
+            Map<String, Object> timezonedocfields = new HashMap<>();
+            timezonedocfields.put("testTimezoned", timestampValue(TIMEZONE));
+            timezonedoc.set(timezonedocfields).get();
         }
+    }
+
+    private static Timestamp timestampValue(ZoneId timezone) {
+        // "2024-03-22T12:13:14.123Z"
+        LocalDateTime timezonedDate = LocalDateTime.of(2024, Month.MARCH, 22, 12, 13,14, 123000000);
+        ZonedDateTime zonedDateTime = timezonedDate.atZone(timezone);
+        Date zonedDate = Date.from(zonedDateTime.toInstant());
+        return Timestamp.of(zonedDate);
     }
 
     @Test
@@ -148,9 +162,25 @@ public class FirestoreUnitTest {
     }
 
     @Test
-    void emptySubDocument() throws Exception {
+    void testEmptySubDocument() throws Exception {
         try (Firestore firestore = connection()) {
             assertFirestoreJson(firestore, asInputStream("json/missing_subdoc.json"));
+        }
+    }
+
+    @Test
+    void testTimezonedValue() throws Exception {
+        try (Firestore firestore = connection()) {
+            assertFirestoreJson(firestore, asInputStream("json/timezoned.json"));
+        }
+    }
+
+    @Test
+    void testOptionZoneId() throws Exception {
+        try (Firestore firestore = connection()) {
+            assertFirestoreJson(firestore,
+                    FirestoreUnit.options().withZoneId("UTC+2"),
+                    asInputStream("json/options_zoneid.json"));
         }
     }
 
@@ -171,7 +201,7 @@ public class FirestoreUnitTest {
 
     @Test
     void testIncorrectDateTime() {
-        testInvalidFile("json/incorrect_datetime.json", "Field does not have the expected value at testcollection/testdoc1/testDateTime ==> expected: <1924-03-22T12:13:14.123000000Z> but was: <2024-03-22T11:13:14.123000000Z>");
+        testInvalidFile("json/incorrect_datetime.json", "Field does not have the expected value at testcollection/testdoc1/testDateTime ==> expected: <1924-03-22T12:13:14.123Z[UTC]> but was: <2024-03-22T12:13:14.123Z[UTC]>");
     }
 
     @Test

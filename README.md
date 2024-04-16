@@ -103,7 +103,8 @@ _testcollection:
 Note that in this example:
 * Collections always need to be prefixed with an underscore "_". This is to let the library
   differentiate between the Map datatype and collections.
-* Date/time values need to be defined in ISO 8601 format
+* Date/time values need to be defined in ISO 8601 format. You can also specify timezone information in your test data,
+  for example "2024-03-22T12:13:14.123+02:00".
 * In case a document should be skipped for checking (both for existance and the fields), prefix it with an underscore
   "_". In this case the document "testcollection/testdoc3" is optional. Firestore allows you to skip definition of all
   intermediate documents in a path.
@@ -120,6 +121,52 @@ unlimited access to the database.
 The use one of the `assertFirestoreJson()` or `assertFirestoreYaml()` methods (depending on the format of your 
 reference data) to validate the contents of your database. In case the data does not match, an `AssertionError` will
 be thrown in a regular JUnit style.
+
+### Options ###
+
+(New feature since 0.3)
+
+You can now specify options to customize the testing behaviour. Each of the default methods now has a variant which
+takes an `Options` object. This `Options`-object will affect the way the library works. Updating the options can be done 
+in a fluent way. As default, the Options object will use "UTC" as the default timezone.
+
+```java
+class Tester {
+    
+    void test() {
+      assertFirestoreJson(
+              firestore, 
+              FirestoreUnit.options()
+                .withZoneId("UTC"), 
+              my_file
+      );
+    }
+}
+```
+
+To specify the data to take the currently specified timezone, you need to enter the expected value in the JSON (or YAML)
+document *without* the timezone information (so without the `Z` or `+02:00`); for example:
+
+```json
+{
+  "_testcollection" : {
+    "timezoned": {
+      "testTimezoned": "2024-03-22T12:13:14.123"
+    }
+  }
+}
+```
+
+#### Specify the timezone to use for testing ####
+
+Use the `Options.withZoneId()` method to specify the `ZoneId` to use when validating timestamps. In case your application
+stores dates in the database with a specific local timezone (i.e. not as UTC or the system default), then comparing dates
+will fail as this will use the `ZoneId.systemDefault()`. You can override the zone id to use using this option.
+
+This setting is convenient when your application code automatically interprets dates using a local timezone. In case that
+timezone also features daylight-saving time (DST), the actual timezone offset may differ depending on when the test is
+executed. By specifying a timezone for comparison, dates can be specified as if timezones are ignored (e.g. as 
+`"2024-03-22T12:13:14.123Z"`). The tester will then automatically assume the same timezone as specified in the options. 
 
 ### Limitations ###
 
