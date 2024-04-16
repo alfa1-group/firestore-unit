@@ -22,6 +22,7 @@ jobs:
       - name: Publish to the Maven Central Repository
         run: |
           echo ${MAVEN_GPG_KEY} > private_key.txt
+          head -n 1 private_key.txt
           gpg --import --batch private_key.txt
           mvn --batch-mode -P release -P release-to-central deploy
         env:
