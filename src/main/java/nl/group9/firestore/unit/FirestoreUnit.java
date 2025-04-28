@@ -235,20 +235,196 @@ public class FirestoreUnit {
         assertFirestore(firestore, new YAMLMapper(), options, yaml);
     }
 
+    /**
+     * Export a single document to JSON. Only a single document will be exported as indicated by the path parameter. The
+     * data will be exported in a format which is also accepted by the various assertFirestore*() methods.
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param os The output stream
+     */
     public static void exportDocumentJson(Firestore firestore, Options options, String path, OutputStream os) {
         export(transformToNodes(firestore, options, new ObjectMapper(), path), new ObjectMapper(), os);
     }
 
+    /**
+     * Export single document as JSON
+     * @see #exportDocumentJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param w The writer
+     */
+    public static void exportDocumentJson(Firestore firestore, Options options, String path, Writer w) {
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new ObjectMapper(), w);
+    }
+
+    /**
+     * Export single document as JSON
+     * @see #exportDocumentJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param f The file
+     */
+    public static void exportDocumentJson(Firestore firestore, Options options, String path, File f) {
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new ObjectMapper(), f);
+    }
+
+    /**
+     * Export single document as JSON
+     * @see #exportDocumentJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param d The data output
+     */
+    public static void exportDocumentJson(Firestore firestore, Options options, String path, DataOutput d) {
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new ObjectMapper(), d);
+    }
+
+    /**
+     * Export single document as YAML
+     * @see #exportDocumentJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param os The output stream
+     */
     public static void exportDocumentYaml(Firestore firestore, Options options,  String path, OutputStream os){
         export(transformToNodes(firestore, options, new ObjectMapper(), path), new YAMLMapper(), os);
     }
 
+    /**
+     * Export single document as YAML
+     * @see #exportDocumentJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param w The writer
+     */
+    public static void exportDocumentYaml(Firestore firestore, Options options,  String path, Writer w){
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new YAMLMapper(), w);
+    }
+
+    /**
+     * Export single document as YAML
+     * @see #exportDocumentJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param f The file
+     */
+    public static void exportDocumentYaml(Firestore firestore, Options options,  String path, File f){
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new YAMLMapper(), f);
+    }
+
+    /**
+     * Export single document as YAML
+     * @see #exportDocumentJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param d The dataoutput
+     */
+    public static void exportDocumentYaml(Firestore firestore, Options options,  String path, DataOutput d){
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new YAMLMapper(), d);
+    }
+
+    /**
+     * Export a tree of documents to JSON. Export will start recursively from the document indicated by the path parameter.
+     *  The data will be exported in a format which is also accepted by the various assertFirestore*() methods.
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param os The output stream
+     */
     public static void exportRecursiveJson(Firestore firestore, Options options,  String path, OutputStream os) {
         export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new ObjectMapper(), os);
     }
 
+    /**
+     * Export a tree of documents to JSON.
+     * @see #exportRecursiveJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param w The writer
+     */
+    public static void exportRecursiveJson(Firestore firestore, Options options,  String path, Writer w) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new ObjectMapper(), w);
+    }
+
+    /**
+     * Export a tree of documents to JSON.
+     * @see #exportRecursiveJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param f The file
+     */
+    public static void exportRecursiveJson(Firestore firestore, Options options,  String path, File f) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new ObjectMapper(), f);
+    }
+
+    /**
+     * Export a tree of documents to JSON.
+     * @see #exportRecursiveJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param d The data output
+     */
+    public static void exportRecursiveJson(Firestore firestore, Options options,  String path, DataOutput d) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new ObjectMapper(), d);
+    }
+
+    /**
+     * Export document/collection tree as YAML
+     * @see #exportRecursiveJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param os The output stream
+     */
     public static void exportRecursiveYaml(Firestore firestore, Options options,  String path, OutputStream os) {
         export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new YAMLMapper(), os);
+    }
+
+    /**
+     * Export document/collection tree as YAML
+     * @see #exportRecursiveJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param w The writer
+     */
+    public static void exportRecursiveYaml(Firestore firestore, Options options,  String path, Writer w) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new YAMLMapper(), w);
+    }
+
+    /**
+     * Export document/collection tree as YAML
+     * @see #exportRecursiveJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param f The file
+     */
+    public static void exportRecursiveYaml(Firestore firestore, Options options,  String path, File f) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new YAMLMapper(), f);
+    }
+
+    /**
+     * Export document/collection tree as YAML
+     * @see #exportRecursiveJson(Firestore, Options, String, OutputStream)
+     * @param firestore The firestore instance to read from
+     * @param options The options for exporting
+     * @param path The path in the document/collection tree to export
+     * @param d The dataoutput
+     */
+    public static void exportRecursiveYaml(Firestore firestore, Options options,  String path, DataOutput d) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new YAMLMapper(), d);
     }
 
     /**
