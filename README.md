@@ -168,6 +168,13 @@ timezone also features daylight-saving time (DST), the actual timezone offset ma
 executed. By specifying a timezone for comparison, dates can be specified as if timezones are ignored (e.g. as 
 `"2024-03-22T12:13:14.123Z"`). The tester will then automatically assume the same timezone as specified in the options. 
 
+### Exporting ###
+
+You can export the data in your Firestore datebase. This can be done for a single document or for a tree of documents and collections. The export can be written as JSON or as YAML. It uses the same format
+as accepted by the various `assert*` methods.
+
+To export a document or tree, use the various `export*()` method of `FirestoreUnit`. 
+
 ### Limitations ###
 
 This library has the following limitations:
