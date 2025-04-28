@@ -340,8 +340,7 @@ public class FirestoreUnitTest {
 
     private static Firestore connection() {
         FirestoreOptions options = FirestoreOptions
-                .getDefaultInstance()
-                .toBuilder()
+                .newBuilder()
                 .setEmulatorHost(emulator.getEmulatorEndpoint())
                 .setProjectId("demo-test-project")
                 .build();
