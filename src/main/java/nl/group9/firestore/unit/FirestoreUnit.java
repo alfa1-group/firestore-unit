@@ -3,15 +3,14 @@ package nl.group9.firestore.unit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.cloud.firestore.Firestore;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.net.URL;
 import java.time.ZoneId;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -236,6 +235,22 @@ public class FirestoreUnit {
         assertFirestore(firestore, new YAMLMapper(), options, yaml);
     }
 
+    public static void exportDocumentJson(Firestore firestore, Options options, String path, OutputStream os) {
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new ObjectMapper(), os);
+    }
+
+    public static void exportDocumentYaml(Firestore firestore, Options options,  String path, OutputStream os){
+        export(transformToNodes(firestore, options, new ObjectMapper(), path), new YAMLMapper(), os);
+    }
+
+    public static void exportRecursiveJson(Firestore firestore, Options options,  String path, OutputStream os) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new ObjectMapper(), os);
+    }
+
+    public static void exportRecursiveYaml(Firestore firestore, Options options,  String path, OutputStream os) {
+        export(transformToNodesRecursive(firestore, options, new ObjectMapper(), path), new YAMLMapper(), os);
+    }
+
     /**
      * Return the default options
      * @return the options
@@ -331,6 +346,52 @@ public class FirestoreUnit {
     private static void assertFirestore(Firestore firestore, Options options, JsonNode tree) {
         FirestoreTester tester = new FirestoreTester(firestore, options, tree);
         tester.validate();
+    }
+
+    private static void export(Supplier<ObjectNode> nodeSupplier, ObjectMapper mapper, OutputStream os) {
+        try {
+            mapper.writeValue(os, nodeSupplier.get());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void export(Supplier<ObjectNode> nodeSupplier, ObjectMapper mapper, Writer w) {
+        try {
+            mapper.writeValue(w, nodeSupplier.get());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void export(Supplier<ObjectNode> nodeSupplier, ObjectMapper mapper, File f) {
+        try {
+            mapper.writeValue(f, nodeSupplier.get());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void export(Supplier<ObjectNode> nodeSupplier, ObjectMapper mapper, DataOutput o) {
+        try {
+            mapper.writeValue(o, nodeSupplier.get());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Supplier<ObjectNode> transformToNodes(Firestore firestore, Options options, ObjectMapper mapper, String path) {
+        return () -> {
+            FirestoreExporter exporter = new FirestoreExporter(firestore, options, mapper);
+            return exporter.exportDocument(path);
+        };
+    }
+
+    private static Supplier<ObjectNode> transformToNodesRecursive(Firestore firestore, Options options, ObjectMapper mapper, String path) {
+        return () -> {
+            FirestoreExporter exporter = new FirestoreExporter(firestore, options, mapper);
+            return exporter.exportTree(path);
+        };
     }
 
 }

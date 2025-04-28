@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FirestoreTester {
 
-    private static final String COLLECTION_PREFIX = "_";
+    public static final String COLLECTION_PREFIX = "_";
     private final Firestore firestore;
     private final JsonNode tree;
     private final Executor executor;

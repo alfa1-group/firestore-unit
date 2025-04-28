@@ -1,11 +1,11 @@
 package nl.group9.firestore.unit;
 
-import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
+import com.google.firebase.internal.EmulatorCredentials;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
@@ -20,9 +20,9 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.time.*;
 import java.util.*;
+import java.util.function.BiConsumer;
 
-import static nl.group9.firestore.unit.FirestoreUnit.assertFirestoreJson;
-import static nl.group9.firestore.unit.FirestoreUnit.assertFirestoreYaml;
+import static nl.group9.firestore.unit.FirestoreUnit.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
@@ -244,6 +244,52 @@ public class FirestoreUnitTest {
         testInvalidFile("json/invalid_type.json", "Field is not of extected type class java.lang.Double at testcollection/testdoc1/testBoolean ==> Unexpected type, expected: <java.lang.Double> but was: <java.lang.Boolean>");
     }
 
+    @Test
+    void testExportJson() throws Exception {
+        testExport(
+                (firestore, baos) ->
+                    exportDocumentJson(firestore, FirestoreUnit.options(), "testcollection/testdoc1", baos),
+                FirestoreUnit::assertFirestoreJson
+        );
+    }
+
+    @Test
+    void testExportYaml() throws Exception {
+        testExport(
+                (firestore, baos) ->
+                        exportDocumentYaml(firestore, FirestoreUnit.options(), "testcollection/testdoc1", baos),
+                FirestoreUnit::assertFirestoreYaml
+        );
+    }
+
+    @Test
+    void testExportJsonRecursive() throws Exception {
+        testExport(
+                (firestore, baos) ->
+                        exportRecursiveJson(firestore, FirestoreUnit.options(), "testcollection/testdoc1", baos),
+                FirestoreUnit::assertFirestoreJson
+        );
+    }
+
+    @Test
+    void testExportYamlRecursive() throws Exception {
+        testExport(
+                (firestore, baos) ->
+                        exportRecursiveYaml(firestore, FirestoreUnit.options(), "testcollection/testdoc1", baos),
+                FirestoreUnit::assertFirestoreYaml
+        );
+    }
+
+    private void testExport(BiConsumer<Firestore, OutputStream> exporter, BiConsumer<Firestore, InputStream> asserter) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (Firestore firestore = connection()) {
+            exporter.accept(firestore, baos);
+            System.out.println(baos);
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            asserter.accept(firestore, bais);
+        }
+    }
+
     private void testInvalidFile(String file, String errorMessage) {
         try (Firestore firestore = connection()) {
             try {
@@ -297,9 +343,8 @@ public class FirestoreUnitTest {
         FirestoreOptions options = FirestoreOptions
                 .getDefaultInstance()
                 .toBuilder()
-                .setHost(emulator.getEmulatorEndpoint())
-                .setCredentials(NoCredentials.getInstance())
-                .setProjectId("test-project")
+                .setEmulatorHost(emulator.getEmulatorEndpoint())
+                .setProjectId("demo-test-project")
                 .build();
         return options.getService();
     }
