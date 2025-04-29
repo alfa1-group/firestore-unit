@@ -1,0 +1,11 @@
+{
+  "_non-existing": {
+    "dangling" : {
+      "_start-here": {
+        "doc": {
+          "testInteger": 20
+        }
+      }
+    }
+  }
+}

@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
+import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -96,8 +97,14 @@ class FirestoreTester {
         // VALIDATE: document exists
         String path = snapshot.getReference().getPath();
 
-        assertTrue(snapshot.exists(), "The document was not found at " + path);
-        validateFields(node, path, snapshot::contains, snapshot::get);
+        Iterable<String> iterable = node::fieldNames;
+        boolean hasFields = StreamSupport.stream(iterable.spliterator(), false)
+                                .anyMatch(this::isValueFieldName);
+
+        if (hasFields) {
+            assertTrue(snapshot.exists(), "The document was not found at " + path);
+            validateFields(node, path, snapshot::contains, snapshot::get);
+        }
 
         return snapshot;
     }
@@ -242,7 +249,15 @@ class FirestoreTester {
     }
 
     private boolean isCollectionFieldEntry(Map.Entry<String, JsonNode> fieldEntry) {
-        return fieldEntry.getKey().startsWith(COLLECTION_PREFIX);
+        return isCollectionFieldName(fieldEntry.getKey());
+    }
+
+    private boolean isValueFieldName(String fieldName) {
+        return !isCollectionFieldName(fieldName);
+    }
+
+    private boolean isCollectionFieldName(String fieldName) {
+        return fieldName.startsWith(COLLECTION_PREFIX);
     }
 
     private String toCollectionName(Map.Entry<String, JsonNode> fieldEntry) {

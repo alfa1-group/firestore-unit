@@ -86,6 +86,17 @@ public class FirestoreUnitTest {
             Map<String, Object> timezonedocfields = new HashMap<>();
             timezonedocfields.put("testTimezoned", timestampValue(TIMEZONE));
             timezonedoc.set(timezonedocfields).get();
+
+            // Non-existing documents, we should ignore the in-between documents without fields
+            DocumentReference danglingDocument = firestore
+                    .collection("non-existing")
+                    .document("dangling")
+                    .collection("start-here")
+                    .document("doc");
+            danglingDocument.set(Map.of(
+                    "testInteger", 20
+            )).get();
+
         }
     }
 
@@ -187,6 +198,13 @@ public class FirestoreUnitTest {
             assertFirestoreJson(firestore,
                     FirestoreUnit.options().withZoneId("UTC+2"),
                     asInputStream("json/options_zoneid.json"));
+        }
+    }
+
+    @Test
+    void testDanglingDocument() throws Exception {
+        try (Firestore firestore = connection()) {
+            assertFirestoreJson(firestore, asInputStream("json/dangling.json"));
         }
     }
 
