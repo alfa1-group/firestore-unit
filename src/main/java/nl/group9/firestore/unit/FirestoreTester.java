@@ -12,6 +12,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.opentest4j.AssertionFailedError;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -210,8 +211,8 @@ class FirestoreTester {
     }
 
     private ZonedDateTime timestampZoZonedDateTime(Timestamp timestamp) {
-        Date date = timestamp.toDate();
-        return date.toInstant().atZone(options.getZoneId());
+        Instant instant = Instant.ofEpochSecond(timestamp.getSeconds() , timestamp.getNanos());
+        return instant.atZone(options.getZoneId());
     }
 
     private void assertType(Object docValue, Class<?> type, String fieldPath) {

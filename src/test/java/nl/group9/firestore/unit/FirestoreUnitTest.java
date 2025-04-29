@@ -58,6 +58,12 @@ public class FirestoreUnitTest {
             testdoc1Fields.put("testReference", testcollection.document("ref1"));
             testdoc1Fields.put("testText", "Hello world");
             testdoc1Fields.put("testNull", null);
+
+            var now = LocalDateTime.now();
+            var epochSecond = now.toEpochSecond(ZoneOffset.UTC);
+            var nowTimestamp = Timestamp.ofTimeSecondsAndNanos(epochSecond, now.getNano());
+            testdoc1Fields.put("testNow", nowTimestamp);
+
             testdoc1.set(testdoc1Fields).get();
 
             CollectionReference subcollection = testdoc1.collection("subcollection");

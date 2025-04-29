@@ -126,7 +126,8 @@ public class FirestoreExporter {
         } else  if (value instanceof String v) {
             return factory.textNode(v);
         } else  if (value instanceof Timestamp t) {
-            ZonedDateTime dt = ZonedDateTime.ofInstant(Instant.ofEpochSecond(t.getSeconds(), t.getNanos()), options.getZoneId());
+            int nanos = (t.getNanos() / 1_000) * 1_000; // Round to milliseconds
+            ZonedDateTime dt = ZonedDateTime.ofInstant(Instant.ofEpochSecond(t.getSeconds(), nanos), options.getZoneId());
             String dateStr = formatter.format(dt);
             return factory.textNode(dateStr);
         } else  if (value instanceof DocumentReference) {
