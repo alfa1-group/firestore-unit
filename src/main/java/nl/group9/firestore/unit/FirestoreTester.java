@@ -10,6 +10,7 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.common.util.concurrent.MoreExecutors;
+import org.checkerframework.checker.units.qual.A;
 import org.opentest4j.AssertionFailedError;
 
 import java.time.Instant;
@@ -52,7 +53,7 @@ class FirestoreTester {
             fail(e);
         } catch (ExecutionException e) {
             if (e.getCause() instanceof AssertionFailedError) {
-                throw (AssertionFailedError) e.getCause();
+                throw new AssertionFailedError(e.getCause().getMessage(), e.getCause());
             } else {
                 fail(e.getCause());
             }
