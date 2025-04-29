@@ -57,6 +57,7 @@ public class FirestoreUnitTest {
 
             testdoc1Fields.put("testReference", testcollection.document("ref1"));
             testdoc1Fields.put("testText", "Hello world");
+            testdoc1Fields.put("testNull", null);
             testdoc1.set(testdoc1Fields).get();
 
             CollectionReference subcollection = testdoc1.collection("subcollection");
@@ -224,6 +225,11 @@ public class FirestoreUnitTest {
     }
 
     @Test
+    void testNotNull() {
+        testInvalidFile("json/not_null.json", "Field is not of expected type class java.lang.String at testcollection/testdoc1/testNull ==> Unexpected null value, expected: <java.lang.String> but was: <null>");
+    }
+
+    @Test
     void testMissingCollection() {
         testInvalidFile("json/missing_collection.json", "The document was not found at testcollection/testdoc1/subcollection2/testdoc3 ==> expected: <true> but was: <false>");
     }
@@ -234,13 +240,13 @@ public class FirestoreUnitTest {
     }
 
     @Test
-    void testInvalidValueType() {
-        testInvalidFile("json/null_value.json", "Invalid JSON Node type encountered for document path testcollection/testdoc1/testBoolean");
+    void testInvalidMissingNull() {
+        testInvalidFile("json/null_value.json", "expected: <null> but was: <true>");
     }
 
     @Test
     void testTypeMismatch() {
-        testInvalidFile("json/invalid_type.json", "Field is not of extected type class java.lang.Double at testcollection/testdoc1/testBoolean ==> Unexpected type, expected: <java.lang.Double> but was: <java.lang.Boolean>");
+        testInvalidFile("json/invalid_type.json", "Field is not of expected type class java.lang.Double at testcollection/testdoc1/testBoolean ==> Unexpected type, expected: <java.lang.Double> but was: <java.lang.Boolean>");
     }
 
     @Test

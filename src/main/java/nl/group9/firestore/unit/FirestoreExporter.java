@@ -100,33 +100,6 @@ public class FirestoreExporter {
                     } catch (Error e) {
                         fail("Invalid document type encountered for document" + docRef.getPath() + " and key " + key, e);
                     }
-
-
-//
-//
-//                    if (value.isArray()) { // Array
-//                        assertArrayValue(value, docValue, fieldPath);
-//                    } else if (value.isObject()) { // Map
-//                        assertMapValue(value, docValue, fieldPath);
-//                    } else if (value.isTextual()) {
-//                        if (docValue instanceof Timestamp) {
-//                            // Date and time
-//                            assertPrimitiveValue(value,
-//                                    timestampZoZonedDateTime((Timestamp) docValue),
-//                                    ZonedDateTime.class,
-//                                    this::jsonDateTimeToZonedDateTime,
-//                                    fieldPath);
-//                        } else if (docValue instanceof DocumentReference) {
-//                            assertDocumentReference(value, docValue, fieldPath);
-//                        } else {
-//                            // Text string
-//                            assertPrimitiveValue(value, docValue, String.class, JsonNode::asText, fieldPath);
-//                        }
-//                    } else {
-//                        fail("Invalid JSON Node type encountered for document path " + fieldPath);
-//                    }
-//
-//                    snapshot.get
                 });
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -138,7 +111,9 @@ public class FirestoreExporter {
     private JsonNode exportValue(Object value) {
         JsonNodeFactory factory = objectMapper.getNodeFactory();
 
-        if (value instanceof Boolean b) {
+        if (value == null) {
+            return factory.nullNode();
+        } else if (value instanceof Boolean b) {
             return factory.booleanNode(b);
         } else  if (value instanceof Double d) {
             return factory.numberNode(d);

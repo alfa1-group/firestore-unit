@@ -122,7 +122,9 @@ class FirestoreTester {
 
     private void validateField(JsonNode value, Object docValue, String fieldPath) {
         // https://firebase.google.com/docs/firestore/manage-data/data-types
-        if (value.isArray()) { // Array
+        if (value.isNull()) {
+            assertNull(docValue);
+        } else if (value.isArray()) { // Array
             assertArrayValue(value, docValue, fieldPath);
         } else if (value.isBoolean()) { // Boolean
             assertPrimitiveValue(value, docValue, Boolean.class, JsonNode::asBoolean, fieldPath);
@@ -217,7 +219,7 @@ class FirestoreTester {
     }
 
     private String invalidTypeMessage(String fieldPath, Class<?> expectedType) {
-        return "Field is not of extected type " + expectedType + " at " + fieldPath;
+        return "Field is not of expected type " + expectedType + " at " + fieldPath;
     }
 
     private String invalidValueMessage(String fieldPath) {
