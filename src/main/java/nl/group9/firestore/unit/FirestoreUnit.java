@@ -440,20 +440,24 @@ public class FirestoreUnit {
      */
     public static class Options {
         private final ZoneId zoneId;
+        private final boolean strictArrayOrdering;
 
         /**
          * Default constructor, sets default values for options
          */
         private Options() {
             zoneId = ZoneId.of("UTC");
+            strictArrayOrdering = true;
         }
 
         /**
          * Updating constructor. Used in the with*() methods.
          * @param zoneId The zone id.
+         * @param strictArrayOrdering The strict array ordering flag
          */
-        private Options(ZoneId zoneId) {
+        private Options(ZoneId zoneId, boolean strictArrayOrdering) {
             this.zoneId = zoneId;
+            this.strictArrayOrdering = strictArrayOrdering;
         }
 
         /**
@@ -471,11 +475,41 @@ public class FirestoreUnit {
          * @return The new options
          */
         public Options withZoneId(ZoneId zoneId) {
-            return new Options(zoneId);
+            return new Options(zoneId, strictArrayOrdering);
+        }
+
+        /**
+         * <p>
+         *      Enable strict array ordering. With strict array ordering enabled, when checking an array, the elements
+         *      are expected to be in the exact same order as in the reference file.
+         * </p>
+         * <p>
+         *     With lax array ordering, all elements in the reference file are expected to be present in the document
+         *     regardless of their order. Note that this also affects the checking of duplicates; in case elements
+         *     occur more than once in the document and reference array, lax checking will only validate that each
+         *     of the elements is present in both arrays, regardless of the number of times they are present in the array.
+         * </p>
+         * @return The new options.
+         */
+        public Options withStrictArrayOrdering() {
+            return new Options(zoneId, true);
+        }
+
+        /**
+         * Disable strict array ordering.
+         * @see #withStrictArrayOrdering()
+         * @return The new options
+         */
+        public Options withLaxArrayOrdering() {
+            return new Options(zoneId, false);
         }
 
         ZoneId getZoneId() {
             return zoneId;
+        }
+
+        boolean isStrictArrayOrdering() {
+            return strictArrayOrdering;
         }
     }
 

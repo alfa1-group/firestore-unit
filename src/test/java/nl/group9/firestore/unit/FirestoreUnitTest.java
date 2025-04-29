@@ -54,6 +54,7 @@ public class FirestoreUnitTest {
                     "field2", "text"
             ));
             testdoc1Fields.put("testDateTime", timestampValue(ZoneId.of("UTC")));
+            testdoc1Fields.put("testDuplicatesArray", List.of("A", "B", "A", "A", "B"));
 
             testdoc1Fields.put("testReference", testcollection.document("ref1"));
             testdoc1Fields.put("testText", "Hello world");
@@ -214,6 +215,37 @@ public class FirestoreUnitTest {
     }
 
     @Test
+    void testArrayDifferentElementsLax() {
+        testInvalidFile(
+                "json/array_diff_element.json",
+                FirestoreUnit.options().withLaxArrayOrdering(),
+                "Array value for path testcollection/testdoc1/testArray[0] not found in document"
+        );
+    }
+
+    @Test
+    void testArrayOrderingLax() throws Exception {
+        try (Firestore firestore = connection()) {
+            assertFirestoreJson(
+                    firestore,
+                    FirestoreUnit.options().withLaxArrayOrdering(),
+                    asInputStream("json/lax_array.json")
+            );
+        }
+    }
+
+    @Test
+    void testArrayOrderingLaxWithDuplicates() throws Exception {
+        try (Firestore firestore = connection()) {
+            assertFirestoreJson(
+                    firestore,
+                    FirestoreUnit.options().withLaxArrayOrdering(),
+                    asInputStream("json/lax_array_with_duplicates.json")
+            );
+        }
+    }
+
+    @Test
     void testArrayDifferenSize() {
         testInvalidFile("json/array_diff_size.json", "Array field does not contain the same number of elements at testcollection/testdoc1/testArray ==> expected: <5> but was: <4>");
     }
@@ -320,9 +352,13 @@ public class FirestoreUnitTest {
     }
 
     private void testInvalidFile(String file, String errorMessage) {
+        testInvalidFile(file, FirestoreUnit.options(), errorMessage);
+    }
+
+    private void testInvalidFile(String file, Options options, String errorMessage) {
         try (Firestore firestore = connection()) {
             try {
-                assertFirestoreJson(firestore, asInputStream(file));
+                assertFirestoreJson(firestore, options, asInputStream(file));
                 fail();
             } catch (AssertionFailedError e) {
                 assertEquals(errorMessage, e.getMessage());

@@ -185,14 +185,47 @@ class FirestoreTester {
         List<?> docListValue = (List<?>) docValue;
         assertEquals(arrayNode.size(), docListValue.size(),
                 "Array field does not contain the same number of elements at " + fieldPath);
+        if (options.isStrictArrayOrdering()) {
+            assertArrayValueStrict(arrayNode, docListValue, fieldPath);
+        } else {
+            assertArrayValueLax(arrayNode, docListValue, fieldPath);
+        }
 
+    }
+
+    private void assertArrayValueStrict(ArrayNode arrayNode, List<?> docListValue, String fieldPath) {
         for (int i = 0; i < docListValue.size(); i++) {
             JsonNode arrayValue = arrayNode.get(i);
             Object docArrayValue = docListValue.get(i);
-            String subPath = fieldPath + "[" + i + "]";
 
-            validateField(arrayValue, docArrayValue, subPath);
+            validateField(arrayValue, docArrayValue, arraySubPath(fieldPath, i));
         }
+    }
+
+    private void assertArrayValueLax(ArrayNode arrayNode, List<?> docListValue, String fieldPath) {
+        for (int i = 0 ; i < docListValue.size(); i++) {
+            JsonNode arrayValue = arrayNode.get(i);
+            String subPath =  arraySubPath(fieldPath, i);
+
+            boolean found = false;
+            for (Object docArrayValue : docListValue) {
+                try {
+                    validateField(arrayValue, docArrayValue, subPath);
+                    found = true;
+                    break; // Validation succeeded, so we found the element in the array
+                } catch (AssertionFailedError e) {
+                    // ignore
+                }
+            }
+
+            if (!found) {
+                fail("Array value for path " + subPath + " not found in document");
+            }
+        }
+    }
+
+    private String arraySubPath(String fieldPath, int i) {
+        return fieldPath + "[" + i + "]";
     }
 
     @SuppressWarnings("unchecked")

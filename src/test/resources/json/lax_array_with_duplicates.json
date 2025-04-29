@@ -1,0 +1,35 @@
+{
+  "_testcollection" : {
+    "testdoc1": {
+      "testArray": [
+        false,
+        2.0,
+        30,
+        "Hello array"
+      ],
+      "testBoolean": true,
+      "testFloat": 1.0,
+      "testInteger": 20,
+      "testMap": {
+        "field1": 10,
+        "field2": "text"
+      },
+      "testNull": null,
+      "testDateTime": "2024-03-22T12:13:14.123Z",
+      "testReference": "testcollection/ref1",
+      "testText": "Hello world",
+      "testDuplicatesArray": [
+        "B",
+        "B",
+        "B",
+        "A",
+        "A"
+      ],
+      "_subcollection" : {
+        "testdoc2": {
+          "testText": "Hello Firestore"
+        }
+      }
+    }
+  }
+}
