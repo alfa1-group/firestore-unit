@@ -10,7 +10,6 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.common.util.concurrent.MoreExecutors;
-import org.checkerframework.checker.units.qual.A;
 import org.opentest4j.AssertionFailedError;
 
 import java.time.Instant;
