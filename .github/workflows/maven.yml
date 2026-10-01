@@ -13,6 +13,9 @@ on:
     branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main", "develop" ]
+  schedule:
+    # Weekly, so a change in the (floating) Firestore emulator image is noticed early
+    - cron: "23 6 * * 1"
 
 jobs:
   build:
@@ -21,10 +24,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    - name: Set up JDK 17
+    - name: Set up JDK 25
       uses: actions/setup-java@v5
       with:
-        java-version: '17'
+        java-version: '25'
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
