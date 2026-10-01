@@ -1,0 +1,41 @@
+# Merges Dependabot PRs once the "Java CI with Maven" build succeeded for them.
+# Runs via workflow_run (not pull_request) so that the token is allowed to write,
+# and so that it does not depend on branch protection / the auto-merge repo setting.
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows: ["Java CI with Maven"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  merge:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge PR if authored by Dependabot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -z "$PR_NUMBER" ]; then echo "No PR attached to this run"; exit 0; fi
+          read -r author state head < <(gh pr view "$PR_NUMBER" --json author,state,headRefOid \
+            --jq '[.author.login, .state, .headRefOid] | @tsv')
+          if [ "$author" != "app/dependabot" ] && [ "$author" != "dependabot[bot]" ]; then
+            echo "PR #$PR_NUMBER is by $author, not Dependabot; skipping"; exit 0
+          fi
+          if [ "$state" != "OPEN" ] || [ "$head" != "$HEAD_SHA" ]; then
+            echo "PR is no longer open or has newer commits; skipping"; exit 0
+          fi
+          gh pr merge "$PR_NUMBER" --merge --delete-branch --match-head-commit "$HEAD_SHA"
+          # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the release check explicitly.
+          gh workflow run release.yaml --ref "${{ github.event.repository.default_branch }}"

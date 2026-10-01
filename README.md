@@ -1,5 +1,8 @@
 # README #
 
+[![Maven Central](https://img.shields.io/maven-central/v/nl.group9/firestore-unit.svg)](https://central.sonatype.com/artifact/nl.group9/firestore-unit)
+[![Build](https://github.com/alfa1-group/firestore-unit/actions/workflows/maven.yml/badge.svg)](https://github.com/alfa1-group/firestore-unit/actions/workflows/maven.yml)
+
 This README documents the steps which are necessary to use this library.
 
 ## What is this repository for? ##
@@ -14,20 +17,25 @@ Use the `assertFirestore*` methods in `FiresstoreUnit` to perform the validation
 
 ### Including the dependency ###
 
-Include this library as a dependency for your project:
+Include this library as a dependency for your project. Use the latest version shown in the
+badge above (`x.y.z` below).
+
+The version of this library matches the version of `google-cloud-firestore` it is built
+against. Fixes and features that cannot wait for the next Firestore release are published
+as `x.y.z-1`, `x.y.z-2`, and so on.
 
 **Maven**
 ```xml
     <dependency>
         <groupId>nl.group9</groupId>
         <artifactId>firestore-unit</artifactId>
-        <version>1.0</version>
+        <version>x.y.z</version>
     </dependency>
 ```
 
 **Gradle**
 ```groovy
-    testImplementation "nl.group9:firestore-unit:1.0"
+    testImplementation "nl.group9:firestore-unit:x.y.z"
 ```
 
 ### Define the validation files ###

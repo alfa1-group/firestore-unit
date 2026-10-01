@@ -1,0 +1,131 @@
+# Release policy
+#   * The version of this library follows the version of google-cloud-firestore in pom.xml.
+#     When that version has no release yet, x.y.z is released automatically.
+#   * All other changes just wait in main and are included in the next Firestore release.
+#   * Manual run with "extra_release" ticked: releases x.y.z-N (N = 1, 2, ...) for features/fixes
+#     that cannot wait for the next Firestore release. (x.y.z-0 is never used; x.y.z is that release.)
+name: Release
+
+on:
+  push:
+    branches: ["main"]
+  schedule:
+    - cron: "17 5 * * *"   # safety net, e.g. for merges that did not trigger a push event
+  workflow_dispatch:
+    inputs:
+      extra_release:
+        description: "Release x.y.z-N even if x.y.z already exists"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+      - id: v
+        env:
+          EXTRA: ${{ inputs.extra_release }}
+        run: |
+          base=$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          ns = {"m": "http://maven.apache.org/POM/4.0.0"}
+          for d in ET.parse("pom.xml").getroot().findall("m:dependencies/m:dependency", ns):
+              if d.find("m:artifactId", ns).text == "google-cloud-firestore":
+                  print(d.find("m:version", ns).text); break
+          PY
+          )
+          [ -n "$base" ] || { echo "google-cloud-firestore version not found in pom.xml"; exit 1; }
+          echo "Firestore version: $base"
+          version=""
+          if ! git rev-parse -q --verify "refs/tags/$base" >/dev/null; then
+            version="$base"
+          elif [ "$EXTRA" = "true" ]; then
+            n=1
+            while git rev-parse -q --verify "refs/tags/$base-$n" >/dev/null; do n=$((n+1)); done
+            version="$base-$n"
+          fi
+          echo "Release to create: ${version:-none}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: version
+    if: needs.version.outputs.version != ''
+    uses: ./.github/workflows/publish.yaml
+    # A called workflow cannot get more permissions than its caller grants
+    permissions:
+      contents: read
+      packages: write
+    with:
+      version: ${{ needs.version.outputs.version }}
+    secrets: inherit
+
+  release:
+    needs: [version, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Tag only after publishing succeeded, so a failed publish is retried by the next run.
+      - name: Create GitHub release and tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ needs.version.outputs.version }}" --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "${{ needs.version.outputs.version }}" --generate-notes
+
+  # Maven Central validates and syncs asynchronously; make sure the release really shows up.
+  verify:
+    needs: [version, release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Wait for the artifact on Maven Central
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          base="https://repo1.maven.org/maven2/nl/group9/firestore-unit/$VERSION/firestore-unit-$VERSION"
+          for i in $(seq 1 80); do
+            if curl -fsSI -o /dev/null "$base.pom" && curl -fsSI -o /dev/null "$base.jar"; then
+              echo "Found $VERSION on Maven Central"; exit 0
+            fi
+            echo "Not on Maven Central yet (attempt $i)"; sleep 60
+          done
+          echo "firestore-unit $VERSION did not appear on Maven Central"; exit 1
+
+  notify-failure:
+    needs: [version, publish, release, verify]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open an issue assigned to the maintainer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          gh label create release-failure --color B60205 --description "Automated release failed" 2>/dev/null || true
+          # The scheduled run retries daily; don't open a new issue for every retry
+          if [ "$(gh issue list --label release-failure --state open --json number --jq length)" != "0" ]; then
+            echo "An open release-failure issue already exists"; exit 0
+          fi
+          gh issue create --label release-failure --assignee jfbenckhuijsen \
+            --title "Release ${VERSION:-of the new Firestore version} failed" \
+            --body "The release workflow failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Check which job failed (publish, GitHub release or Maven Central verification). Close this issue when resolved."
