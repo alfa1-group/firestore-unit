@@ -65,6 +65,10 @@ jobs:
     needs: version
     if: needs.version.outputs.version != ''
     uses: ./.github/workflows/publish.yaml
+    # A called workflow cannot get more permissions than its caller grants
+    permissions:
+      contents: read
+      packages: write
     with:
       version: ${{ needs.version.outputs.version }}
     secrets: inherit
@@ -82,3 +86,46 @@ jobs:
         run: |
           gh release create "${{ needs.version.outputs.version }}" --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" --title "${{ needs.version.outputs.version }}" --generate-notes
+
+  # Maven Central validates and syncs asynchronously; make sure the release really shows up.
+  verify:
+    needs: [version, release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Wait for the artifact on Maven Central
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          base="https://repo1.maven.org/maven2/nl/group9/firestore-unit/$VERSION/firestore-unit-$VERSION"
+          for i in $(seq 1 80); do
+            if curl -fsSI -o /dev/null "$base.pom" && curl -fsSI -o /dev/null "$base.jar"; then
+              echo "Found $VERSION on Maven Central"; exit 0
+            fi
+            echo "Not on Maven Central yet (attempt $i)"; sleep 60
+          done
+          echo "firestore-unit $VERSION did not appear on Maven Central"; exit 1
+
+  notify-failure:
+    needs: [version, publish, release, verify]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open an issue assigned to the maintainer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          gh label create release-failure --color B60205 --description "Automated release failed" 2>/dev/null || true
+          # The scheduled run retries daily; don't open a new issue for every retry
+          if [ "$(gh issue list --label release-failure --state open --json number --jq length)" != "0" ]; then
+            echo "An open release-failure issue already exists"; exit 0
+          fi
+          gh issue create --label release-failure --assignee jfbenckhuijsen \
+            --title "Release ${VERSION:-of the new Firestore version} failed" \
+            --body "The release workflow failed: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Check which job failed (publish, GitHub release or Maven Central verification). Close this issue when resolved."

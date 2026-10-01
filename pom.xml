@@ -124,11 +124,6 @@
   <profiles>
     <profile>
       <id>release</id>
-      <activation>
-        <property>
-          <name>env.BITBUCKET_DEPLOYMENT_ENVIRONMENT</name>
-        </property>
-      </activation>
       <build>
         <plugins>
           <plugin>

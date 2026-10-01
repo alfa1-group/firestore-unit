@@ -41,7 +41,6 @@ jobs:
         env:
           MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_KEY }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          TEST_ME: $${{ vars.MAVEN_GPG_TEST }}
       - name: Publish to GitHub Packages
         run: ./mvnw --batch-mode -P release -P release-to-github deploy
         env:

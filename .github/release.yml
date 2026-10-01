@@ -1,0 +1,14 @@
+# Groups the automatically generated GitHub release notes
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: Features
+      labels: [enhancement, feature]
+    - title: Bug fixes
+      labels: [bug, fix]
+    - title: Firestore and dependency updates
+      labels: [dependencies]
+    - title: Other changes
+      labels: ["*"]
