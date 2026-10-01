@@ -1,0 +1,84 @@
+# Release policy
+#   * The version of this library follows the version of google-cloud-firestore in pom.xml.
+#     When that version has no release yet, x.y.z is released automatically.
+#   * All other changes just wait in main and are included in the next Firestore release.
+#   * Manual run with "extra_release" ticked: releases x.y.z-N (N = 1, 2, ...) for features/fixes
+#     that cannot wait for the next Firestore release. (x.y.z-0 is never used; x.y.z is that release.)
+name: Release
+
+on:
+  push:
+    branches: ["main"]
+  schedule:
+    - cron: "17 5 * * *"   # safety net, e.g. for merges that did not trigger a push event
+  workflow_dispatch:
+    inputs:
+      extra_release:
+        description: "Release x.y.z-N even if x.y.z already exists"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+      - id: v
+        env:
+          EXTRA: ${{ inputs.extra_release }}
+        run: |
+          base=$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          ns = {"m": "http://maven.apache.org/POM/4.0.0"}
+          for d in ET.parse("pom.xml").getroot().findall("m:dependencies/m:dependency", ns):
+              if d.find("m:artifactId", ns).text == "google-cloud-firestore":
+                  print(d.find("m:version", ns).text); break
+          PY
+          )
+          [ -n "$base" ] || { echo "google-cloud-firestore version not found in pom.xml"; exit 1; }
+          echo "Firestore version: $base"
+          version=""
+          if ! git rev-parse -q --verify "refs/tags/$base" >/dev/null; then
+            version="$base"
+          elif [ "$EXTRA" = "true" ]; then
+            n=1
+            while git rev-parse -q --verify "refs/tags/$base-$n" >/dev/null; do n=$((n+1)); done
+            version="$base-$n"
+          fi
+          echo "Release to create: ${version:-none}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: version
+    if: needs.version.outputs.version != ''
+    uses: ./.github/workflows/publish.yaml
+    with:
+      version: ${{ needs.version.outputs.version }}
+    secrets: inherit
+
+  release:
+    needs: [version, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Tag only after publishing succeeded, so a failed publish is retried by the next run.
+      - name: Create GitHub release and tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ needs.version.outputs.version }}" --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "${{ needs.version.outputs.version }}" --generate-notes

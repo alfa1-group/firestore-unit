@@ -187,9 +187,9 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.google.firebase</groupId>
-      <artifactId>firebase-admin</artifactId>
-      <version>9.4.3</version>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-firestore</artifactId>
+      <version>3.49.0</version>
     </dependency>
 
     <dependency>

@@ -1,5 +1,12 @@
 name: Publish package to the Maven Central Repository and GitHub Packages
 on:
+  # Called by release.yaml (releases created with GITHUB_TOKEN don't trigger the release event)
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+  # Manually created releases
   release:
     types: [created]
 jobs:
@@ -24,9 +31,8 @@ jobs:
                 "username": "${{ secrets.SONATYPE_USERNAME }}",
                 "password": "${{ secrets.SONATYPE_PASSWORD }}"
              }]
-      - if: github.event.release
-        name: Update version in pom.xml (Release only)
-        run: ./mvnw -B versions:set -DnewVersion=${{ github.event.release.tag_name }} -DgenerateBackupPoms=false
+      - name: Update version in pom.xml
+        run: ./mvnw -B versions:set -DnewVersion=${{ inputs.version || github.event.release.tag_name }} -DgenerateBackupPoms=false
       - name: Publish to the Maven Central Repository
         run: |
           echo "${MAVEN_GPG_KEY}" > private_key.txt
